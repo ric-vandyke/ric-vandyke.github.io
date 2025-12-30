@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>eric-vandyke</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Hey, I'm Eric</h1>
+      <p>Welcome to my little corner of the internet.</p>
+      <nav class="socials-header">
+        <ul>
+          <li><a data-config-link="socials.linkedin" href="#">LinkedIn</a></li>
+          <li><a data-config-link="socials.x" href="#">X</a></li>
+          <li><a data-config-link="socials.instagram" href="#">Instagram</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="section about">
+      <h2>About</h2>
+      <p>I design and build small, human-friendly tools—mixing strategy, UI craft, and experiments to help ideas take shape. This site is where I drop notes, demos, and in-progress things I'm learning along the way.</p>
+    </section>
+
+    <section class="section highlight">
+      <h2>Stuff I’m Into</h2>
+      <ul>
+        <li>Technology</li>
+        <li>Sports</li>
+        <li>Wellness</li>
+        <li>Thing three</li>
+      </ul>
+    </section>
+
+    <section class="section work">
+      <h2>Work</h2>
+      <p>Selected things I’ve shipped and tinkered with—details coming soon:</p>
+      <ul>
+        <li><a data-config-link="projects.one" href="#">Semiconductor Fab Retrofit</a></li>
+        <li><a data-config-link="projects.two" href="#">Project Stargate - Abilene</a></li>
+        <li><a data-config-link="projects.three" href="#">Project Three</a></li>
+      </ul>
+    </section>
+
+    <section class="section gallery">
+      <div class="section-header">
+        <h2>Photo Galleries</h2>
+        <p>Moments, textures, and little visual notes from recent wanderings.</p>
+      </div>
+      <div class="gallery-grid">
+        <article class="gallery-card">
+          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80" alt="Quiet landscape">
+          <div class="gallery-meta">
+            <h3>Wide Open</h3>
+            <p>Sunrise drives and long horizons.</p>
+          </div>
+        </article>
+        <article class="gallery-card">
+          <img src="https://images.unsplash.com/photo-1523419400524-2230c1e46e72?auto=format&fit=crop&w=900&q=80" alt="City lights at night">
+          <div class="gallery-meta">
+            <h3>City After Dark</h3>
+            <p>Neon, reflections, and midnight colors.</p>
+          </div>
+        </article>
+        <article class="gallery-card">
+          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=900&q=80" alt="Forest trail">
+          <div class="gallery-meta">
+            <h3>Trail Notes</h3>
+            <p>Textures from hikes and quiet paths.</p>
+          </div>
+        </article>
+      </div>
+      <button class="secondary-btn">View All Galleries</button>
+    </section>
+
+    <footer class="footer">
+      <p>© 2025 Eric VanDyke</p>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      var rootPrefix = window.location.pathname.indexOf('/projects/') !== -1 ? '..' : '.';
+
+      var loadInit = function () {
+        var initScript = document.createElement('script');
+        initScript.src = rootPrefix + '/init-links.js';
+        document.body.appendChild(initScript);
+      };
+
+      var configScript = document.createElement('script');
+      configScript.src = rootPrefix + '/config.js';
+      configScript.onload = loadInit;
+      document.body.appendChild(configScript);
+    })();
+  </script>
+</body>
+</html>
