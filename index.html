@@ -187,6 +187,7 @@
   </div>
   <script>
     (function () {
+      var groupStates = [];
       var groups = document.querySelectorAll('.gallery-group');
       groups.forEach(function (group) {
         var toggle = group.querySelector('.accordion-toggle');
@@ -207,8 +208,24 @@
 
         setOpen(false);
 
+        var state = {
+          setOpen: setOpen,
+          isOpen: function () {
+            return isOpen;
+          }
+        };
+        groupStates.push(state);
+
         toggle.addEventListener('click', function () {
-          setOpen(!isOpen);
+          var willOpen = !isOpen;
+          if (willOpen) {
+            groupStates.forEach(function (entry) {
+              if (entry !== state) {
+                entry.setOpen(false);
+              }
+            });
+          }
+          setOpen(willOpen);
         });
       });
     })();
