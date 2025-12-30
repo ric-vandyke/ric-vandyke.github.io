@@ -29,6 +29,10 @@
     var path = linkMap[key];
     if (path) {
       anchor.setAttribute('href', withPrefix(path));
+      if (key.indexOf('socials.') === 0) {
+        anchor.setAttribute('target', '_blank');
+        anchor.setAttribute('rel', 'noreferrer noopener');
+      }
     }
   });
 })();
