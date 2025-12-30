@@ -7,72 +7,136 @@
 </head>
 <body>
   <div class="page">
-    <header class="hero">
-      <h1>Hey, I'm Eric</h1>
-      <p>Welcome to my little corner of the internet.</p>
-      <nav class="socials-header">
-        <ul>
-          <li><a data-config-link="socials.linkedin" href="#">LinkedIn</a></li>
-          <li><a data-config-link="socials.x" href="#">X</a></li>
-          <li><a data-config-link="socials.instagram" href="#">Instagram</a></li>
-        </ul>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">E</div>
+        <span class="brand-name">Eric VanDyke</span>
+      </div>
+      <nav class="main-nav">
+        <a href="#about">About</a>
+        <a href="#work">Work</a>
+        <a href="#services">Services</a>
       </nav>
     </header>
 
-    <section class="section about">
-      <h2>About</h2>
-      <p>I design and build small, human-friendly tools—mixing strategy, UI craft, and experiments to help ideas take shape. This site is where I drop notes, demos, and in-progress things I'm learning along the way.</p>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Hello, I’m</p>
+        <h1>Eric VanDyke<span class="accent-dot">.</span></h1>
+        <p class="lede">Eric is a System Integration and Information Solutions team leader in the hyperscaler Datacenter and Semiconductor markets and responsible for the technical delivery.</p>
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-value">12+</div>
+            <div class="stat-label">Years shipping</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">45</div>
+            <div class="stat-label">Projects led</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">100,000</div>
+            <div class="stat-label">Hours deployed</div>
+          </div>
+        </div>
+        <nav class="socials-header">
+          <ul>
+            <li><a data-config-link="socials.linkedin" href="#">LinkedIn</a></li>
+            <li><a data-config-link="socials.x" href="#">X</a></li>
+            <li><a data-config-link="socials.instagram" href="#">Instagram</a></li>
+            <li><a data-config-link="socials.email" href="#">Email</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="hero-visual">
+        <div class="orbit orbit-1"></div>
+        <div class="orbit orbit-2"></div>
+        <img class="portrait-img" src="assets/img/img1.svg" alt="Portrait of Eric VanDyke">
+      </div>
     </section>
 
-    <section class="section highlight">
-      <h2>Stuff I’m Into</h2>
-      <ul>
-        <li>Technology</li>
-        <li>Sports</li>
-        <li>Wellness</li>
-        <li>Artificial Intelligence</li>
-      </ul>
+    <section id="about" class="section about">
+      <div class="about-media">
+        <div class="about-portrait"></div>
+        <div class="bubble bubble-large">
+          <strong>215+</strong>
+          <span>Projects completed</span>
+        </div>
+        <div class="bubble bubble-small">
+          <strong>97%</strong>
+          <span>Happy clients</span>
+        </div>
+      </div>
+      <div class="about-copy">
+        <p class="eyebrow">About me</p>
+        <h2>Designing systems with heart</h2>
+        <p class="lede">I pair product thinking with visual craft to build experiences that feel cohesive end-to-end—from research and flows to UI polish and launch.</p>
+        <div class="about-grid">
+          <div class="card mini">
+            <div class="stat-value">16</div>
+            <div class="stat-label">Years of experience</div>
+          </div>
+          <div class="card mini">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Industries</div>
+          </div>
+          <div class="card mini">
+            <div class="stat-value">∞</div>
+            <div class="stat-label">Curiosity</div>
+          </div>
+        </div>
+        <div class="cta-row">
+          <a class="primary-btn" data-config-link="socials.email" href="#">Hire me</a>
+          <a class="secondary-btn ghost" data-config-link="projects.two" href="#">See client work</a>
+        </div>
+      </div>
     </section>
 
-    <section class="section work">
-      <h2>Work</h2>
-      <p>Selected things I’ve shipped and tinkered with—details coming soon:</p>
-      <ul>
-        <li><a data-config-link="projects.one" href="#">Semiconductor Fab Retrofit</a></li>
-        <li><a data-config-link="projects.two" href="#">Project Stargate - Abilene</a></li>
-        <li><a data-config-link="projects.three" href="#">Everything Else</a></li>
-      </ul>
-    </section>
-
-    <section class="section gallery">
+    <section id="services" class="section services">
       <div class="section-header">
-        <h2>Photo Galleries</h2>
-        <p>Moments, textures, and little visual notes from recent wanderings.</p>
+        <p class="eyebrow">What I do</p>
+        <h2>Services</h2>
       </div>
-      <div class="gallery-grid">
-        <article class="gallery-card">
-          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80" alt="Quiet landscape">
-          <div class="gallery-meta">
-            <h3>Wide Open</h3>
-            <p>Sunrise drives and long horizons.</p>
-          </div>
+      <div class="service-grid">
+        <article class="card service-card featured">
+          <h3>Product & UX Design</h3>
+          <p>Create product vision, flows, wireframes, prototypes, and usability tests that align teams around the right thing to build.</p>
         </article>
-        <article class="gallery-card">
-          <img src="https://images.unsplash.com/photo-1523419400524-2230c1e46e72?auto=format&fit=crop&w=900&q=80" alt="City lights at night">
-          <div class="gallery-meta">
-            <h3>City After Dark</h3>
-            <p>Neon, reflections, and midnight colors.</p>
-          </div>
+        <article class="card service-card">
+          <h3>Systems & Design Ops</h3>
+          <p>Design systems, tokens, and component libraries that keep product surfaces coherent as teams and features scale.</p>
         </article>
-        <article class="gallery-card">
-          <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=900&q=80" alt="Forest trail">
-          <div class="gallery-meta">
-            <h3>Trail Notes</h3>
-            <p>Textures from hikes and quiet paths.</p>
-          </div>
+        <article class="card service-card">
+          <h3>Delivery & Handoff</h3>
+          <p>Spec, document, and partner with engineering to ship polished experiences—no surprises at build time.</p>
         </article>
       </div>
-      <button class="secondary-btn">View All Galleries</button>
+    </section>
+
+    <section id="work" class="section work">
+      <div class="section-header">
+        <p class="eyebrow">Selected work</p>
+        <h2>Recent projects</h2>
+      </div>
+      <div class="work-grid">
+        <article class="card work-card">
+          <div class="pill">Hardware</div>
+          <h3>Semiconductor Fab Retrofit</h3>
+          <p>Modernized operator workflows with clearer telemetry and fewer steps to configure production runs.</p>
+          <a class="text-link" data-config-link="projects.one" href="#">View case study →</a>
+        </article>
+        <article class="card work-card">
+          <div class="pill">AI Systems</div>
+          <h3>Project Stargate – Abilene</h3>
+          <p>Designed the orchestration UI for multi-model routing with safety, observability, and fast iteration loops.</p>
+          <a class="text-link" data-config-link="projects.two" href="#">View case study →</a>
+        </article>
+        <article class="card work-card">
+          <div class="pill">Strategy</div>
+          <h3>Everything Else</h3>
+          <p>Work in progress across ops tools, dashboards, and ML-powered assistants for enterprise teams.</p>
+          <a class="text-link" data-config-link="projects.three" href="#">View case study →</a>
+        </article>
+      </div>
     </section>
 
     <footer class="footer">

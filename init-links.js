@@ -7,7 +7,7 @@
 
   var withPrefix = function (path) {
     if (!path) return '';
-    if (/^https?:\/\//i.test(path) || path.indexOf('//') === 0) {
+    if (/^https?:\/\//i.test(path) || path.indexOf('//') === 0 || path.indexOf('mailto:') === 0) {
       return path;
     }
     return (rootPrefix + '/' + path).replace(/\/+/g, '/');
@@ -18,6 +18,7 @@
     'projects.one': links.projects && links.projects.one,
     'projects.two': links.projects && links.projects.two,
     'projects.three': links.projects && links.projects.three,
+    'socials.email': links.socials && links.socials.email,
     'socials.linkedin': links.socials && links.socials.linkedin,
     'socials.x': links.socials && links.socials.x,
     'socials.instagram': links.socials && links.socials.instagram,
