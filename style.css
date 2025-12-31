@@ -41,7 +41,6 @@ body {
   gap: 2.5rem;
   align-items: center;
   padding: 3rem 0 2rem;
-  position: relative;
 }
 
 .hero h1 {
@@ -110,7 +109,10 @@ body {
   min-height: 360px;
   display: grid;
   place-items: center;
-  z-index: 0;
+}
+
+.hero-inline-visual {
+  display: none;
 }
 
 .portrait-img {
@@ -595,10 +597,19 @@ a:hover {
   }
 
   .portrait-img {
-    width: 125%;
-    max-width: none;
-    box-shadow: none;
-    object-fit: cover;
+    width: 72%;
+    max-width: 240px;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .hero-inline-visual {
+    display: grid;
+    place-items: center;
+    margin: 0.35rem 0 0.2rem;
+  }
+
+  .hero-visual {
+    display: none;
   }
 
   .gallery {
@@ -693,39 +704,11 @@ a:hover {
   }
 
   .hero {
-    padding: 2.5rem 0 2.2rem;
-    overflow: hidden;
-  }
-
-  .hero::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(11, 12, 16, 0.75) 0%, rgba(11, 12, 16, 0.9) 60%, rgba(11, 12, 16, 1) 100%);
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .hero {
     gap: 1.35rem;
   }
 
   .hero-copy {
-    position: relative;
-    z-index: 1;
     padding: 0.25rem 0.35rem;
-  }
-
-  .hero-visual {
-    position: absolute;
-    inset: -10% -12% auto;
-    height: 120%;
-    min-height: unset;
-    opacity: 0.22;
-    filter: saturate(0.8) contrast(1.05) blur(1px);
-    pointer-events: none;
-    align-items: center;
-    justify-content: center;
   }
 
   .hero-stats {
