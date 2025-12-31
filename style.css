@@ -35,63 +35,6 @@ body {
   padding: 2.5rem 1.5rem 4rem;
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(18, 20, 27, 0.7);
-  position: sticky;
-  top: 1.25rem;
-  backdrop-filter: blur(10px);
-  z-index: 10;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.brand-mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(176, 42, 55, 0.28), rgba(176, 42, 55, 0.5));
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  color: #fef2f2;
-}
-
-.brand-name {
-  color: var(--text);
-}
-
-.main-nav {
-  display: flex;
-  align-items: center;
-  gap: 1.4rem;
-  font-size: 0.95rem;
-}
-
-.main-nav a {
-  color: var(--muted);
-  text-decoration: none;
-  padding: 0.25rem 0.35rem;
-  min-height: 42px;
-  transition: color 0.15s ease;
-}
-
-.main-nav a:hover {
-  color: var(--text);
-}
-
 .hero {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -179,26 +122,29 @@ body {
 
 .orbit {
   position: absolute;
+  left: 50%;
+  top: 50%;
   border-radius: 50%;
   border: 2px solid rgba(176, 42, 55, 0.35);
   z-index: 0;
+  transform: translate(-50%, -50%);
 }
 
 .orbit-1 {
-  width: 520px;
-  height: 520px;
+  width: 560px;
+  height: 380px;
   animation: spin 16s linear infinite;
 }
 
 .orbit-2 {
-  width: 660px;
-  height: 660px;
+  width: 740px;
+  height: 480px;
   animation: spin 22s linear infinite reverse;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .primary-btn {
@@ -602,32 +548,6 @@ a:hover {
     padding: 1.5rem 0.9rem 2.4rem;
   }
 
-  .topbar {
-    padding: 0.65rem 0.85rem;
-    border-radius: 14px;
-    width: 100%;
-    margin: 0 auto;
-    gap: 0.65rem;
-  }
-
-  .brand {
-    gap: 0.45rem;
-  }
-
-  .brand-mark {
-    width: 30px;
-    height: 30px;
-  }
-
-  .brand-name {
-    font-size: 0.95rem;
-  }
-
-  .main-nav {
-    gap: 0.75rem;
-    font-size: 0.9rem;
-  }
-
   .hero {
     grid-template-columns: 1fr;
     padding: 2rem 0 1.25rem;
@@ -767,30 +687,6 @@ a:hover {
 @media (max-width: 640px) {
   .page {
     padding: 1.25rem 0.85rem 2.2rem;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-    position: sticky;
-    top: 0.65rem;
-  }
-
-  .main-nav {
-    width: 100%;
-    justify-content: center;
-    gap: 0.6rem;
-  }
-
-  .main-nav a {
-    flex: 1 1 auto;
-    text-align: center;
-    padding: 0.65rem 0.75rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    color: var(--text);
   }
 
   .hero {
