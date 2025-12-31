@@ -111,6 +111,10 @@ body {
   place-items: center;
 }
 
+.hero-heading {
+  display: block;
+}
+
 .hero-inline-visual {
   display: none;
 }
@@ -556,6 +560,12 @@ a:hover {
     grid-template-columns: 1fr;
     padding: 2rem 0 1.25rem;
     gap: 1.25rem;
+  }
+
+  .hero-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
   .hero-copy {
