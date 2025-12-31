@@ -188,8 +188,9 @@
   <script>
     (function () {
       var groupStates = [];
+      var preferOpenFirst = window.matchMedia('(max-width: 768px)').matches;
       var groups = document.querySelectorAll('.gallery-group');
-      groups.forEach(function (group) {
+      groups.forEach(function (group, idx) {
         var toggle = group.querySelector('.accordion-toggle');
         var panel = group.querySelector('.gallery-carousel');
         var chevron = group.querySelector('.chevron');
@@ -207,6 +208,9 @@
         };
 
         setOpen(false);
+        if (preferOpenFirst && idx === 0) {
+          setOpen(true);
+        }
 
         var state = {
           setOpen: setOpen,
