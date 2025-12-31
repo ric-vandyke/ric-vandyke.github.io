@@ -120,8 +120,8 @@ body {
 }
 
 .portrait-img {
-  width: 35%;
-  max-width: 180px;
+  width: 70%;
+  max-width: 360px;
   aspect-ratio: 3 / 4;
   border-radius: 1.6rem;
   object-fit: cover;
@@ -565,6 +565,8 @@ a:hover {
   .hero-heading {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
     gap: 0.6rem;
   }
 
@@ -607,15 +609,15 @@ a:hover {
   }
 
   .portrait-img {
-    width: 36%;
-    max-width: 120px;
+    width: 72%;
+    max-width: 240px;
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.4);
   }
 
   .hero-inline-visual {
     display: grid;
     place-items: center;
-    margin: 0.35rem 0 0.2rem;
+    margin: 0;
   }
 
   .hero-visual {
