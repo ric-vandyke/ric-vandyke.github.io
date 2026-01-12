@@ -12,7 +12,7 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eric-vandyke</title>
+  <title>EVD</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/img1.svg" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -301,6 +301,14 @@
             slide.classList.remove('active');
           }
         });
+
+        if (dotsContainer) {
+          dotsContainer.innerHTML = '';
+          if (slides.length <= 1) {
+            dotsContainer.remove();
+            dotsContainer = null;
+          }
+        }
 
         if (dotsContainer) {
           slides.forEach(function (_slide, idx) {
