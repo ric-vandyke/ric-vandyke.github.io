@@ -1,11 +1,6 @@
 window.siteConfig = {
   links: {
     home: 'index.html',
-    projects: {
-      one: 'projects/one.html',
-      two: 'projects/two.html',
-      three: 'projects/three.html',
-    },
     socials: {
       email: 'mailto:eric@ericvandyke.ai',
       linkedin: 'https://www.linkedin.com/in/hireericvandyke/',

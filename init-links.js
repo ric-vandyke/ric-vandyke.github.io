@@ -2,8 +2,7 @@
   if (!window.siteConfig || !window.siteConfig.links) return;
 
   var links = window.siteConfig.links;
-  var inProjectsDir = window.location.pathname.indexOf('/projects/') !== -1;
-  var rootPrefix = inProjectsDir ? '..' : '.';
+  var rootPrefix = '.';
 
   var withPrefix = function (path) {
     if (!path) return '';
@@ -15,9 +14,6 @@
 
   var linkMap = {
     'home': links.home,
-    'projects.one': links.projects && links.projects.one,
-    'projects.two': links.projects && links.projects.two,
-    'projects.three': links.projects && links.projects.three,
     'socials.email': links.socials && links.socials.email,
     'socials.linkedin': links.socials && links.socials.linkedin,
     'socials.x': links.socials && links.socials.x,
