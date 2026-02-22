@@ -2,7 +2,7 @@ window.siteConfig = {
   links: {
     home: 'index.html',
     socials: {
-      email: 'mailto:eric@ericvandyke.ai',
+      spotify: 'https://open.spotify.com/user/eric_vandyke?si=8aa0ffedaa854034',
       linkedin: 'https://www.linkedin.com/in/hireericvandyke/',
       x: 'https://x.com/controlsbarista',
       instagram: 'https://www.instagram.com/ricvandyke/',
