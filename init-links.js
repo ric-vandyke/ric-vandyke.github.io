@@ -14,6 +14,7 @@
 
   var linkMap = {
     'home': links.home,
+    'games.snake': links.games && links.games.snake,
     'socials.spotify': links.socials && links.socials.spotify,
     'socials.linkedin': links.socials && links.socials.linkedin,
     'socials.x': links.socials && links.socials.x,

@@ -1,6 +1,9 @@
 window.siteConfig = {
   links: {
     home: 'index.html',
+    games: {
+      snake: 'snake.html',
+    },
     socials: {
       spotify: 'https://open.spotify.com/user/eric_vandyke?si=8aa0ffedaa854034',
       linkedin: 'https://www.linkedin.com/in/hireericvandyke/',
