@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .section {
+      margin-top: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .snake-shell {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0;
+      display: grid;
+      gap: 0.85rem;
+      justify-items: center;
+    }
+
+    .snake-topline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: center;
+      width: 100%;
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .snake-topline a {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      align-self: center;
+      width: fit-content;
+      text-decoration: none;
+      color: #f3f4f6;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+      padding: 0.32rem 0.8rem;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .snake-score-block {
+      display: grid;
+      gap: 0.25rem;
+      justify-items: end;
+      justify-self: end;
+    }
+
+    .snake-status {
+      color: #d1d5db;
+      font-size: 0.95rem;
+      text-align: center;
+      min-height: 1.3rem;
+    }
+
+    .snake-board {
+      width: min(67.5vw, 570px);
+      aspect-ratio: 1 / 1;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: #0a0d12;
+      image-rendering: auto;
+      display: block;
+    }
+
+    .mobile-controls {
+      display: none;
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(3, 56px);
+      gap: 0.55rem;
+      justify-content: center;
+      align-content: center;
+      margin-top: 0.25rem;
+      user-select: none;
+    }
+
+    .mobile-btn {
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 0.75rem;
+      background: rgba(255, 255, 255, 0.06);
+      color: #f3f4f6;
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-btn:active {
+      background: rgba(176, 42, 55, 0.7);
+      border-color: rgba(176, 42, 55, 0.85);
+    }
+
+    .mobile-btn-start {
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+    }
+
+    .mobile-up { grid-column: 2; grid-row: 1; }
+    .mobile-left { grid-column: 1; grid-row: 2; }
+    .mobile-start { grid-column: 2; grid-row: 2; }
+    .mobile-right { grid-column: 3; grid-row: 2; }
+    .mobile-down { grid-column: 2; grid-row: 3; }
+
+    @media (hover: none) and (pointer: coarse) {
+      .mobile-controls {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="section">
+      <div class="snake-shell">
+        <div class="snake-topline">
+          <a href="index.html">← Back</a>
+          <span>Snake</span>
+          <span class="snake-score-block">
+            <span id="scoreText">Score: 0</span>
+            <span id="timeText">Time Elapsed: 0:00</span>
+          </span>
+        </div>
+        <p id="statusText" class="snake-status">Press Space Bar to Start.</p>
+        <canvas id="snakeCanvas" class="snake-board" width="500" height="500" aria-label="Snake game board"></canvas>
+        <div class="mobile-controls" aria-label="Mobile controls">
+          <button class="mobile-btn mobile-up" type="button" data-mobile-dir="up" aria-label="Move up">↑</button>
+          <button class="mobile-btn mobile-left" type="button" data-mobile-dir="left" aria-label="Move left">←</button>
+          <button class="mobile-btn mobile-start mobile-btn-start" type="button" data-mobile-start aria-label="Start game">START</button>
+          <button class="mobile-btn mobile-right" type="button" data-mobile-dir="right" aria-label="Move right">→</button>
+          <button class="mobile-btn mobile-down" type="button" data-mobile-dir="down" aria-label="Move down">↓</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+    (function () {
+      var BOARD_SIZE = 50;
+      var CELL_SIZE = 10;
+      var TICK_MS = 85;
+      var HEAD_SCALE = 5.2;
+
+      var canvas = document.getElementById('snakeCanvas');
+      var ctx = canvas.getContext('2d');
+      var statusText = document.getElementById('statusText');
+      var scoreText = document.getElementById('scoreText');
+      var timeText = document.getElementById('timeText');
+
+      var headImage = new Image();
+      headImage.src = 'assets/img/snake-head.svg';
+
+      var snake = [];
+      var direction = { x: 1, y: 0 };
+      var queuedDirection = { x: 1, y: 0 };
+      var food = null;
+      var running = false;
+      var gameOver = false;
+      var score = 0;
+      var lastTick = 0;
+      var rafId = null;
+      var elapsedMs = 0;
+      var startMs = null;
+
+      function formatElapsed(ms) {
+        var totalSeconds = Math.floor(ms / 1000);
+        var minutes = Math.floor(totalSeconds / 60);
+        var seconds = totalSeconds % 60;
+        return minutes + ':' + String(seconds).padStart(2, '0');
+      }
+
+      function renderElapsed() {
+        timeText.textContent = 'Time Elapsed: ' + formatElapsed(elapsedMs);
+      }
+
+      function resetGameState() {
+        snake = [];
+        var startX = 15;
+        var startY = 25;
+        for (var i = 0; i < 5; i += 1) {
+          snake.push({ x: startX - i, y: startY });
+        }
+        direction = { x: 1, y: 0 };
+        queuedDirection = { x: 1, y: 0 };
+        score = 0;
+        scoreText.textContent = 'Score: ' + score;
+        elapsedMs = 0;
+        startMs = null;
+        renderElapsed();
+        gameOver = false;
+        placeFood();
+      }
+
+      function sameCell(a, b) {
+        return a.x === b.x && a.y === b.y;
+      }
+
+      function placeFood() {
+        var candidate;
+        do {
+          candidate = {
+            x: Math.floor(Math.random() * BOARD_SIZE),
+            y: Math.floor(Math.random() * BOARD_SIZE)
+          };
+        } while (snake.some(function (segment) { return sameCell(segment, candidate); }));
+        food = candidate;
+      }
+
+      function setDirection(next) {
+        if (!running) return;
+        if (next.x === -direction.x && next.y === -direction.y) return;
+        queuedDirection = next;
+      }
+
+      function advance() {
+        direction = queuedDirection;
+        var currentHead = snake[0];
+        var newHead = {
+          x: currentHead.x + direction.x,
+          y: currentHead.y + direction.y
+        };
+
+        if (newHead.x < 0 || newHead.x >= BOARD_SIZE || newHead.y < 0 || newHead.y >= BOARD_SIZE) {
+          gameOver = true;
+          running = false;
+          if (startMs !== null) {
+            elapsedMs = performance.now() - startMs;
+            renderElapsed();
+          }
+          statusText.textContent = 'Game over. Press Space Bar to restart.';
+          return;
+        }
+
+        if (snake.some(function (segment) { return sameCell(segment, newHead); })) {
+          gameOver = true;
+          running = false;
+          if (startMs !== null) {
+            elapsedMs = performance.now() - startMs;
+            renderElapsed();
+          }
+          statusText.textContent = 'Game over. Press Space Bar to restart.';
+          return;
+        }
+
+        snake.unshift(newHead);
+
+        if (sameCell(newHead, food)) {
+          score += 1;
+          scoreText.textContent = 'Score: ' + score;
+          placeFood();
+        } else {
+          snake.pop();
+        }
+      }
+
+      function drawBoard() {
+        ctx.fillStyle = '#0a0d12';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.10)';
+        ctx.lineWidth = 1;
+        for (var i = 0; i <= BOARD_SIZE; i += 10) {
+          var pos = i * CELL_SIZE;
+          ctx.beginPath();
+          ctx.moveTo(pos, 0);
+          ctx.lineTo(pos, canvas.height);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, pos);
+          ctx.lineTo(canvas.width, pos);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = '#c4303f';
+        ctx.fillRect(food.x * CELL_SIZE, food.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+
+        for (var s = snake.length - 1; s >= 1; s -= 1) {
+          var segment = snake[s];
+          ctx.fillStyle = '#f3f4f6';
+          ctx.fillRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
+
+        var head = snake[0];
+        var hx = head.x * CELL_SIZE;
+        var hy = head.y * CELL_SIZE;
+
+        if (headImage.complete && headImage.naturalWidth > 0) {
+          var headSize = CELL_SIZE * HEAD_SCALE;
+          var headOffset = (headSize - CELL_SIZE) / 2;
+          var dx = hx - headOffset;
+          var dy = hy - headOffset;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(headImage, dx, dy, headSize, headSize);
+        } else {
+          ctx.fillStyle = '#f3f4f6';
+          ctx.fillRect(hx, hy, CELL_SIZE, CELL_SIZE);
+        }
+      }
+
+      function gameLoop(timestamp) {
+        if (!lastTick) lastTick = timestamp;
+        if (running && startMs !== null) {
+          elapsedMs = timestamp - startMs;
+          renderElapsed();
+        }
+        if (running && timestamp - lastTick >= TICK_MS) {
+          lastTick = timestamp;
+          advance();
+        }
+        drawBoard();
+        rafId = requestAnimationFrame(gameLoop);
+      }
+
+      function startGame() {
+        if (gameOver) {
+          resetGameState();
+        }
+        if (!running) {
+          running = true;
+          startMs = performance.now() - elapsedMs;
+          statusText.textContent = 'Use Arrow Keys or WASD to move.';
+        }
+      }
+
+      function directionFromName(name) {
+        if (name === 'up') return { x: 0, y: -1 };
+        if (name === 'down') return { x: 0, y: 1 };
+        if (name === 'left') return { x: -1, y: 0 };
+        if (name === 'right') return { x: 1, y: 0 };
+        return null;
+      }
+
+      document.addEventListener('keydown', function (event) {
+        var key = event.key.toLowerCase();
+        var isMovementKey =
+          key === 'arrowup' ||
+          key === 'arrowdown' ||
+          key === 'arrowleft' ||
+          key === 'arrowright' ||
+          key === 'w' ||
+          key === 'a' ||
+          key === 's' ||
+          key === 'd';
+
+        if (event.code === 'Space' || key === ' ') {
+          event.preventDefault();
+          startGame();
+          return;
+        }
+
+        if (isMovementKey) {
+          event.preventDefault();
+        }
+
+        if (key === 'arrowup' || key === 'w') setDirection({ x: 0, y: -1 });
+        if (key === 'arrowdown' || key === 's') setDirection({ x: 0, y: 1 });
+        if (key === 'arrowleft' || key === 'a') setDirection({ x: -1, y: 0 });
+        if (key === 'arrowright' || key === 'd') setDirection({ x: 1, y: 0 });
+      });
+
+      var mobileButtons = document.querySelectorAll('[data-mobile-dir]');
+      mobileButtons.forEach(function (button) {
+        var handlePress = function (event) {
+          event.preventDefault();
+          var dir = directionFromName(button.getAttribute('data-mobile-dir'));
+          if (dir) setDirection(dir);
+        };
+        button.addEventListener('touchstart', handlePress, { passive: false });
+        button.addEventListener('mousedown', handlePress);
+        button.addEventListener('click', handlePress);
+      });
+
+      var mobileStartButton = document.querySelector('[data-mobile-start]');
+      if (mobileStartButton) {
+        var startPress = function (event) {
+          event.preventDefault();
+          startGame();
+        };
+        mobileStartButton.addEventListener('touchstart', startPress, { passive: false });
+        mobileStartButton.addEventListener('mousedown', startPress);
+        mobileStartButton.addEventListener('click', startPress);
+      }
+
+      resetGameState();
+      drawBoard();
+      rafId = requestAnimationFrame(gameLoop);
+
+      window.addEventListener('beforeunload', function () {
+        if (rafId) cancelAnimationFrame(rafId);
+      });
+    })();
+  </script>
+</body>
+</html>
