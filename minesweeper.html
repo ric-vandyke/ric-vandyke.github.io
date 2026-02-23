@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minesweeper</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .section {
+      margin-top: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .minesweeper-shell {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 0.75rem;
+      justify-items: center;
+    }
+
+    .minesweeper-topline {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0.8rem;
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .minesweeper-topline a {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      width: fit-content;
+      text-decoration: none;
+      color: #f3f4f6;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+      padding: 0.32rem 0.8rem;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .stats {
+      justify-self: end;
+      display: grid;
+      gap: 0.2rem;
+      justify-items: end;
+      font-size: 0.95rem;
+    }
+
+    .minesweeper-status {
+      color: #d1d5db;
+      min-height: 1.3rem;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+      padding: 0.4rem 0.85rem;
+      background: rgba(255, 255, 255, 0.06);
+      color: #f3f4f6;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .control-btn:active {
+      background: rgba(176, 42, 55, 0.7);
+      border-color: rgba(176, 42, 55, 0.85);
+    }
+
+    .control-btn.flag-active {
+      background: rgba(176, 42, 55, 0.24);
+      border-color: rgba(176, 42, 55, 0.8);
+    }
+
+    .board-wrap {
+      width: 100%;
+      display: grid;
+      place-items: center;
+    }
+
+    .minesweeper-board {
+      width: min(88vw, 640px);
+      aspect-ratio: 1 / 1;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 0.9rem;
+      background: #0a0d12;
+      display: block;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #flagModeBtn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="section">
+      <div class="minesweeper-shell">
+        <div class="minesweeper-topline">
+          <a href="index.html">← Back</a>
+          <span>Minesweeper</span>
+          <span class="stats">
+            <span id="minesLeftText">Mines Left: 180</span>
+            <span id="timeText">Time: 0:00</span>
+          </span>
+        </div>
+        <p id="statusText" class="minesweeper-status">30x30 board. Left click to reveal, right click to flag. Press New Game to start fresh.</p>
+        <div class="controls-row">
+          <button id="newGameBtn" class="control-btn" type="button">New Game</button>
+          <button id="flagModeBtn" class="control-btn" type="button" aria-pressed="false">Flag Mode: Off</button>
+        </div>
+        <div class="board-wrap">
+          <canvas id="board" class="minesweeper-board" width="720" height="720" aria-label="Minesweeper board"></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+    (function () {
+      var SIZE = 30;
+      var MINES = 180;
+
+      var canvas = document.getElementById('board');
+      var ctx = canvas.getContext('2d');
+      var statusText = document.getElementById('statusText');
+      var minesLeftText = document.getElementById('minesLeftText');
+      var timeText = document.getElementById('timeText');
+      var newGameBtn = document.getElementById('newGameBtn');
+      var flagModeBtn = document.getElementById('flagModeBtn');
+      var flagImage = new Image();
+      flagImage.src = 'assets/img/snake-head.svg';
+
+      var board = [];
+      var firstMove = true;
+      var gameOver = false;
+      var won = false;
+      var flagsUsed = 0;
+      var startMs = null;
+      var elapsedMs = 0;
+      var timerRaf = null;
+      var flagMode = false;
+
+      function createCell() {
+        return { mine: false, revealed: false, flagged: false, count: 0 };
+      }
+
+      function resetBoard() {
+        board = [];
+        for (var r = 0; r < SIZE; r += 1) {
+          var row = [];
+          for (var c = 0; c < SIZE; c += 1) {
+            row.push(createCell());
+          }
+          board.push(row);
+        }
+      }
+
+      function formatTime(ms) {
+        var seconds = Math.floor(ms / 1000);
+        var mins = Math.floor(seconds / 60);
+        var sec = seconds % 60;
+        return mins + ':' + String(sec).padStart(2, '0');
+      }
+
+      function updateHud() {
+        minesLeftText.textContent = 'Mines Left: ' + (MINES - flagsUsed);
+        timeText.textContent = 'Time: ' + formatTime(elapsedMs);
+      }
+
+      function eachNeighbor(r, c, fn) {
+        for (var dr = -1; dr <= 1; dr += 1) {
+          for (var dc = -1; dc <= 1; dc += 1) {
+            if (dr === 0 && dc === 0) continue;
+            var nr = r + dr;
+            var nc = c + dc;
+            if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+            fn(nr, nc);
+          }
+        }
+      }
+
+      function placeMines(safeR, safeC) {
+        var blocked = {};
+        for (var br = safeR - 1; br <= safeR + 1; br += 1) {
+          for (var bc = safeC - 1; bc <= safeC + 1; bc += 1) {
+            if (br < 0 || br >= SIZE || bc < 0 || bc >= SIZE) continue;
+            blocked[br + ',' + bc] = true;
+          }
+        }
+
+        var placed = 0;
+        while (placed < MINES) {
+          var r = Math.floor(Math.random() * SIZE);
+          var c = Math.floor(Math.random() * SIZE);
+          if (blocked[r + ',' + c]) continue;
+          if (board[r][c].mine) continue;
+          board[r][c].mine = true;
+          placed += 1;
+        }
+
+        for (var rr = 0; rr < SIZE; rr += 1) {
+          for (var cc = 0; cc < SIZE; cc += 1) {
+            if (board[rr][cc].mine) continue;
+            var count = 0;
+            eachNeighbor(rr, cc, function (nr, nc) {
+              if (board[nr][nc].mine) count += 1;
+            });
+            board[rr][cc].count = count;
+          }
+        }
+      }
+
+      function startTimer() {
+        startMs = performance.now() - elapsedMs;
+        if (timerRaf) cancelAnimationFrame(timerRaf);
+
+        var tick = function (ts) {
+          if (gameOver || won || startMs === null) return;
+          elapsedMs = ts - startMs;
+          updateHud();
+          timerRaf = requestAnimationFrame(tick);
+        };
+
+        timerRaf = requestAnimationFrame(tick);
+      }
+
+      function stopTimer() {
+        if (timerRaf) {
+          cancelAnimationFrame(timerRaf);
+          timerRaf = null;
+        }
+      }
+
+      function revealFlood(r, c) {
+        var queue = [[r, c]];
+        while (queue.length) {
+          var item = queue.shift();
+          var rr = item[0];
+          var cc = item[1];
+          var cell = board[rr][cc];
+          if (cell.revealed || cell.flagged) continue;
+          cell.revealed = true;
+          if (cell.count !== 0) continue;
+          eachNeighbor(rr, cc, function (nr, nc) {
+            var n = board[nr][nc];
+            if (!n.revealed && !n.flagged && !n.mine) queue.push([nr, nc]);
+          });
+        }
+      }
+
+      function revealAllMines() {
+        for (var r = 0; r < SIZE; r += 1) {
+          for (var c = 0; c < SIZE; c += 1) {
+            if (board[r][c].mine) board[r][c].revealed = true;
+          }
+        }
+      }
+
+      function checkWin() {
+        var revealed = 0;
+        for (var r = 0; r < SIZE; r += 1) {
+          for (var c = 0; c < SIZE; c += 1) {
+            if (board[r][c].revealed) revealed += 1;
+          }
+        }
+        if (revealed === SIZE * SIZE - MINES) {
+          won = true;
+          gameOver = true;
+          stopTimer();
+          statusText.textContent = 'You cleared the board. New Game to play again.';
+        }
+      }
+
+      function revealCell(r, c) {
+        if (gameOver || won) return;
+        var cell = board[r][c];
+        if (cell.flagged || cell.revealed) return;
+
+        if (firstMove) {
+          placeMines(r, c);
+          firstMove = false;
+          startTimer();
+        }
+
+        if (cell.mine) {
+          cell.revealed = true;
+          revealAllMines();
+          gameOver = true;
+          stopTimer();
+          statusText.textContent = 'Boom. New Game to try again.';
+          draw();
+          return;
+        }
+
+        revealFlood(r, c);
+        checkWin();
+        draw();
+      }
+
+      function toggleFlag(r, c) {
+        if (gameOver || won) return;
+        var cell = board[r][c];
+        if (cell.revealed) return;
+
+        if (cell.flagged) {
+          cell.flagged = false;
+          flagsUsed -= 1;
+        } else {
+          if (flagsUsed >= MINES) return;
+          cell.flagged = true;
+          flagsUsed += 1;
+        }
+
+        updateHud();
+        draw();
+      }
+
+      function cellFromEvent(event) {
+        var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / rect.width;
+        var scaleY = canvas.height / rect.height;
+        var x = (event.clientX - rect.left) * scaleX;
+        var y = (event.clientY - rect.top) * scaleY;
+        var cellSize = canvas.width / SIZE;
+        var c = Math.floor(x / cellSize);
+        var r = Math.floor(y / cellSize);
+        if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return null;
+        return { r: r, c: c };
+      }
+
+      function draw() {
+        var cellSize = canvas.width / SIZE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (var r = 0; r < SIZE; r += 1) {
+          for (var c = 0; c < SIZE; c += 1) {
+            var x = c * cellSize;
+            var y = r * cellSize;
+            var cell = board[r][c];
+
+            if (cell.revealed) {
+              ctx.fillStyle = cell.mine ? '#7f1d1d' : '#141922';
+            } else {
+              ctx.fillStyle = '#0f141d';
+            }
+            ctx.fillRect(x, y, cellSize, cellSize);
+
+            if (cell.revealed) {
+              if (cell.mine) {
+                ctx.fillStyle = '#f3f4f6';
+                ctx.font = Math.floor(cellSize * 0.7) + 'px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('*', x + cellSize / 2, y + cellSize / 2 + 0.5);
+              } else if (cell.count > 0) {
+                var colors = {
+                  1: '#60a5fa',
+                  2: '#34d399',
+                  3: '#f87171',
+                  4: '#a78bfa',
+                  5: '#f59e0b',
+                  6: '#22d3ee',
+                  7: '#fda4af',
+                  8: '#e5e7eb'
+                };
+                ctx.fillStyle = colors[cell.count] || '#e5e7eb';
+                ctx.font = Math.floor(cellSize * 0.62) + 'px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(String(cell.count), x + cellSize / 2, y + cellSize / 2 + 0.5);
+              }
+            } else if (cell.flagged) {
+              if (flagImage.complete && flagImage.naturalWidth > 0) {
+                var pad = Math.max(1, Math.floor(cellSize * 0.06));
+                ctx.drawImage(flagImage, x + pad, y + pad, cellSize - pad * 2, cellSize - pad * 2);
+              } else {
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = Math.floor(cellSize * 0.72) + 'px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('F', x + cellSize / 2, y + cellSize / 2 + 0.5);
+              }
+            }
+
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize, cellSize);
+          }
+        }
+      }
+
+      function setFlagMode(next) {
+        flagMode = !!next;
+        flagModeBtn.classList.toggle('flag-active', flagMode);
+        flagModeBtn.textContent = 'Flag Mode: ' + (flagMode ? 'On' : 'Off');
+        flagModeBtn.setAttribute('aria-pressed', flagMode ? 'true' : 'false');
+      }
+
+      function newGame() {
+        stopTimer();
+        resetBoard();
+        firstMove = true;
+        gameOver = false;
+        won = false;
+        flagsUsed = 0;
+        startMs = null;
+        elapsedMs = 0;
+        setFlagMode(false);
+        updateHud();
+        statusText.textContent = '30x30 board. Left click to reveal, right click to flag. Press New Game to start fresh.';
+        draw();
+      }
+
+      canvas.addEventListener('click', function (event) {
+        var pos = cellFromEvent(event);
+        if (!pos) return;
+        if (flagMode) {
+          toggleFlag(pos.r, pos.c);
+        } else {
+          revealCell(pos.r, pos.c);
+        }
+      });
+
+      canvas.addEventListener('contextmenu', function (event) {
+        event.preventDefault();
+        var pos = cellFromEvent(event);
+        if (!pos) return;
+        toggleFlag(pos.r, pos.c);
+      });
+
+      canvas.addEventListener('touchstart', function (event) {
+        if (!event.touches.length) return;
+        event.preventDefault();
+        var touch = event.touches[0];
+        var pos = cellFromEvent(touch);
+        if (!pos) return;
+        if (flagMode) {
+          toggleFlag(pos.r, pos.c);
+        } else {
+          revealCell(pos.r, pos.c);
+        }
+      }, { passive: false });
+
+      newGameBtn.addEventListener('click', newGame);
+      flagModeBtn.addEventListener('click', function () {
+        setFlagMode(!flagMode);
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key.toLowerCase() === 'f') {
+          event.preventDefault();
+          setFlagMode(!flagMode);
+        }
+      });
+
+      newGame();
+    })();
+  </script>
+</body>
+</html>
