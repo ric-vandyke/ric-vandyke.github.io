@@ -15,6 +15,8 @@
   var linkMap = {
     'home': links.home,
     'games.snake': links.games && links.games.snake,
+    'games.minesweeper': links.games && links.games.minesweeper,
+    'games.flappybird': links.games && links.games.flappybird,
     'socials.spotify': links.socials && links.socials.spotify,
     'socials.linkedin': links.socials && links.socials.linkedin,
     'socials.x': links.socials && links.socials.x,

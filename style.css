@@ -386,8 +386,11 @@ body {
 
 .games-links {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
   padding: 0.5rem 0;
 }
 
