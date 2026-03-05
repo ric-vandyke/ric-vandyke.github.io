@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Snake</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .section {
       margin-top: 0;
@@ -111,6 +112,131 @@
     .mobile-right { grid-column: 3; grid-row: 2; }
     .mobile-down { grid-column: 2; grid-row: 3; }
 
+    .snake-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: grid;
+      place-items: center;
+      z-index: 20;
+      padding: 1rem;
+    }
+
+    .snake-modal[hidden] {
+      display: none;
+    }
+
+    .snake-modal-card {
+      width: min(92vw, 420px);
+      background: #101721;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 1rem;
+      padding: 1rem;
+      color: #f3f4f6;
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .snake-modal-card h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .snake-modal-score {
+      margin: 0;
+      color: #cbd5e1;
+    }
+
+    .snake-modal-card input {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: #0a0d12;
+      color: #f8fafc;
+      border-radius: 0.7rem;
+      padding: 0.6rem 0.75rem;
+      font-size: 1rem;
+    }
+
+    .snake-modal-card button,
+    .snake-leaderboard button {
+      border: 1px solid rgba(196, 48, 63, 0.8);
+      background: #c4303f;
+      color: #fff;
+      border-radius: 0.7rem;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .snake-modal-card button[disabled] {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .snake-modal-error {
+      margin: 0;
+      min-height: 1.2rem;
+      color: #fca5a5;
+      font-size: 0.9rem;
+    }
+
+    .snake-leaderboard {
+      width: min(92vw, 540px);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 1rem;
+      background: rgba(10, 13, 18, 0.92);
+      color: #e5e7eb;
+      padding: 0.9rem 1rem;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .snake-leaderboard[hidden] {
+      display: none;
+    }
+
+    .snake-leaderboard h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .snake-leaderboard ol {
+      list-style: none;
+      margin: 0;
+      padding-left: 0;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .snake-leaderboard li {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .snake-leader-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .snake-leader-medal {
+      width: 1.3rem;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .snake-leaderboard-status {
+      margin: 0;
+      min-height: 1.2rem;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+
     @media (hover: none) and (pointer: coarse) {
       .mobile-controls {
         display: grid;
@@ -142,18 +268,48 @@
       </div>
     </section>
   </div>
+  <div id="nameModal" class="snake-modal" hidden>
+    <form id="nameForm" class="snake-modal-card" novalidate>
+      <h2>Game Over</h2>
+      <p id="finalScoreText" class="snake-modal-score"></p>
+      <label for="playerNameInput">Enter your name</label>
+      <input id="playerNameInput" name="playerName" type="text" maxlength="20" autocomplete="nickname" required />
+      <button id="submitScoreButton" type="submit">Submit Score</button>
+      <p id="nameError" class="snake-modal-error"></p>
+    </form>
+  </div>
+  <div id="leaderboardModal" class="snake-modal" hidden>
+    <section class="snake-leaderboard" aria-live="polite">
+      <h2>Top Ten of All Time</h2>
+      <ol id="leaderboardList"></ol>
+      <p id="leaderboardStatus" class="snake-leaderboard-status"></p>
+      <button id="playAgainButton" type="button">Play Again</button>
+    </section>
+  </div>
+  <script src="config.js"></script>
   <script>
     (function () {
       var BOARD_SIZE = 50;
       var CELL_SIZE = 10;
       var TICK_MS = 85;
       var HEAD_SCALE = 5.2;
+      var LEADERBOARD_LIMIT = 10;
 
       var canvas = document.getElementById('snakeCanvas');
       var ctx = canvas.getContext('2d');
       var statusText = document.getElementById('statusText');
       var scoreText = document.getElementById('scoreText');
       var timeText = document.getElementById('timeText');
+      var nameModal = document.getElementById('nameModal');
+      var nameForm = document.getElementById('nameForm');
+      var finalScoreText = document.getElementById('finalScoreText');
+      var playerNameInput = document.getElementById('playerNameInput');
+      var nameError = document.getElementById('nameError');
+      var submitScoreButton = document.getElementById('submitScoreButton');
+      var leaderboardModal = document.getElementById('leaderboardModal');
+      var leaderboardList = document.getElementById('leaderboardList');
+      var leaderboardStatus = document.getElementById('leaderboardStatus');
+      var playAgainButton = document.getElementById('playAgainButton');
 
       var headImage = new Image();
       headImage.src = 'assets/img/snake-head.svg';
@@ -169,12 +325,47 @@
       var rafId = null;
       var elapsedMs = 0;
       var startMs = null;
+      var scoreSubmittedForRound = false;
+      var supabaseClient = null;
+
+      function initializeSupabase() {
+        var config = window.siteConfig && window.siteConfig.supabase;
+        if (!config || !config.url || !config.anonKey || !window.supabase || !window.supabase.createClient) {
+          return null;
+        }
+        return window.supabase.createClient(config.url, config.anonKey);
+      }
+
+      function leaderboardTable() {
+        var config = window.siteConfig && window.siteConfig.supabase;
+        return (config && config.snakeLeaderboardTable) || 'snake';
+      }
+
+      function isAnyModalOpen() {
+        return !nameModal.hidden || !leaderboardModal.hidden;
+      }
+
+      function snakeSubmitFunctionName() {
+        var config = window.siteConfig && window.siteConfig.supabase;
+        return (config && config.snakeSubmitFunction) || 'snake-submit-score';
+      }
 
       function formatElapsed(ms) {
         var totalSeconds = Math.floor(ms / 1000);
         var minutes = Math.floor(totalSeconds / 60);
         var seconds = totalSeconds % 60;
         return minutes + ':' + String(seconds).padStart(2, '0');
+      }
+
+      function formatLeaderboardDate(value) {
+        if (!value) return null;
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return null;
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
       }
 
       function renderElapsed() {
@@ -196,7 +387,40 @@
         startMs = null;
         renderElapsed();
         gameOver = false;
+        scoreSubmittedForRound = false;
+        nameModal.hidden = true;
+        leaderboardModal.hidden = true;
+        nameError.textContent = '';
+        leaderboardStatus.textContent = '';
         placeFood();
+      }
+
+      function cleanName(name) {
+        return name.trim().replace(/\s+/g, ' ');
+      }
+
+      function isValidName(name) {
+        return /^[a-zA-Z0-9 _.-]{2,20}$/.test(name);
+      }
+
+      function endGame() {
+        gameOver = true;
+        running = false;
+        if (startMs !== null) {
+          elapsedMs = performance.now() - startMs;
+          renderElapsed();
+        }
+        statusText.textContent = 'Game over. Submit your score.';
+        if (!scoreSubmittedForRound) {
+          scoreSubmittedForRound = true;
+          finalScoreText.textContent = 'Score: ' + score + ' | Time: ' + formatElapsed(elapsedMs);
+          playerNameInput.value = '';
+          nameError.textContent = '';
+          nameModal.hidden = false;
+          setTimeout(function () {
+            playerNameInput.focus();
+          }, 0);
+        }
       }
 
       function sameCell(a, b) {
@@ -229,24 +453,12 @@
         };
 
         if (newHead.x < 0 || newHead.x >= BOARD_SIZE || newHead.y < 0 || newHead.y >= BOARD_SIZE) {
-          gameOver = true;
-          running = false;
-          if (startMs !== null) {
-            elapsedMs = performance.now() - startMs;
-            renderElapsed();
-          }
-          statusText.textContent = 'Game over. Press Space Bar to restart.';
+          endGame();
           return;
         }
 
         if (snake.some(function (segment) { return sameCell(segment, newHead); })) {
-          gameOver = true;
-          running = false;
-          if (startMs !== null) {
-            elapsedMs = performance.now() - startMs;
-            renderElapsed();
-          }
-          statusText.textContent = 'Game over. Press Space Bar to restart.';
+          endGame();
           return;
         }
 
@@ -321,6 +533,7 @@
       }
 
       function startGame() {
+        if (isAnyModalOpen()) return;
         if (gameOver) {
           resetGameState();
         }
@@ -341,6 +554,12 @@
 
       document.addEventListener('keydown', function (event) {
         var key = event.key.toLowerCase();
+        if (isAnyModalOpen()) {
+          if (event.code === 'Space' || key === ' ') {
+            event.preventDefault();
+          }
+          return;
+        }
         var isMovementKey =
           key === 'arrowup' ||
           key === 'arrowdown' ||
@@ -390,6 +609,161 @@
         mobileStartButton.addEventListener('click', startPress);
       }
 
+      async function insertScore(playerName, playerScore, roundMs) {
+        if (!supabaseClient) {
+          return { error: 'Supabase is not configured in config.js.' };
+        }
+
+        var functionResult = await supabaseClient.functions.invoke(snakeSubmitFunctionName(), {
+          body: {
+            name: playerName,
+            score: playerScore,
+            elapsedMs: Math.round(roundMs)
+          }
+        });
+
+        if (functionResult.error) {
+          var invokeMessage = functionResult.error.message || String(functionResult.error);
+          var context = functionResult.error.context;
+          if (context) {
+            try {
+              var contextClone = context.clone ? context.clone() : null;
+              var contextBody = contextClone ? await contextClone.json() : await context.json();
+              if (contextBody && contextBody.error) {
+                invokeMessage = contextBody.error;
+              }
+            } catch (_jsonError) {
+              try {
+                var contextText = await context.text();
+                if (contextText) {
+                  invokeMessage = contextText;
+                }
+              } catch (_textError) {
+                // keep default message
+              }
+            }
+          }
+          return { error: invokeMessage };
+        }
+
+        if (functionResult.data && functionResult.data.error) {
+          return { error: functionResult.data.error };
+        }
+
+        return { error: null };
+      }
+
+      async function fetchLeaderboard() {
+        if (!supabaseClient) {
+          return { data: [], error: 'Supabase is not configured in config.js.' };
+        }
+
+        var tableName = leaderboardTable();
+        var fullQuery = await supabaseClient
+          .from(tableName)
+          .select('name,score,elapsed_ms,created_at')
+          .order('score', { ascending: false })
+          .order('elapsed_ms', { ascending: true })
+          .limit(LEADERBOARD_LIMIT);
+
+        if (!fullQuery.error) {
+          return { data: fullQuery.data || [], error: null };
+        }
+
+        var fallbackQuery = await supabaseClient
+          .from(tableName)
+          .select('name,score,created_at')
+          .order('score', { ascending: false })
+          .limit(LEADERBOARD_LIMIT);
+
+        return {
+          data: fallbackQuery.data || [],
+          error: fallbackQuery.error ? fallbackQuery.error.message : fullQuery.error.message
+        };
+      }
+
+      function renderLeaderboard(rows) {
+        leaderboardList.innerHTML = '';
+
+        if (!rows.length) {
+          var emptyItem = document.createElement('li');
+          emptyItem.textContent = 'No scores yet.';
+          leaderboardList.appendChild(emptyItem);
+          return;
+        }
+
+        rows.forEach(function (row, index) {
+          var item = document.createElement('li');
+          var left = document.createElement('span');
+          var nameText = document.createElement('span');
+          var medal = document.createElement('span');
+          var right = document.createElement('span');
+          var medals = ['🥇', '🥈', '🥉'];
+          var scoreValue = typeof row.score === 'number' ? row.score : Number(row.score) || 0;
+          var elapsedText = typeof row.elapsed_ms === 'number' ? formatElapsed(row.elapsed_ms) : null;
+          var dateText = formatLeaderboardDate(row.created_at);
+          var suffixParts = [];
+          if (elapsedText) suffixParts.push(elapsedText);
+          if (dateText) suffixParts.push(dateText);
+          left.className = 'snake-leader-name';
+          medal.className = 'snake-leader-medal';
+          medal.textContent = medals[index] || '';
+          nameText.textContent = row.name || 'Unknown';
+          if (medal.textContent) {
+            left.appendChild(medal);
+          }
+          left.appendChild(nameText);
+          right.textContent = scoreValue + ' pts' + (suffixParts.length ? ' | ' + suffixParts.join(' | ') : '');
+          item.appendChild(left);
+          item.appendChild(right);
+          leaderboardList.appendChild(item);
+        });
+      }
+
+      nameForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (submitScoreButton.disabled) return;
+
+        try {
+          var playerName = cleanName(playerNameInput.value);
+          if (!isValidName(playerName)) {
+            nameError.textContent = 'Use 2-20 characters: letters, numbers, space, . _ -';
+            return;
+          }
+
+          submitScoreButton.disabled = true;
+          nameError.textContent = 'Submitting...';
+
+          var insertResult = await insertScore(playerName, score, elapsedMs);
+          if (insertResult.error) {
+            nameError.textContent = 'Could not save score: ' + insertResult.error;
+            return;
+          }
+
+          var leaderboardResult = await fetchLeaderboard();
+          renderLeaderboard(leaderboardResult.data);
+          leaderboardStatus.textContent = leaderboardResult.error ? ('Could not fully load leaderboard: ' + leaderboardResult.error) : '';
+
+          nameModal.hidden = true;
+          leaderboardModal.hidden = false;
+          statusText.textContent = 'Score submitted. View leaderboard below.';
+          nameError.textContent = '';
+        } catch (err) {
+          var message = err && err.message ? err.message : String(err);
+          nameError.textContent = 'Unexpected error: ' + message;
+          console.error('Snake submit failed:', err);
+        } finally {
+          submitScoreButton.disabled = false;
+        }
+      });
+
+      playAgainButton.addEventListener('click', function () {
+        resetGameState();
+        drawBoard();
+        statusText.textContent = 'Press Space Bar to Start.';
+      });
+
+      supabaseClient = initializeSupabase();
       resetGameState();
       drawBoard();
       rafId = requestAnimationFrame(gameLoop);

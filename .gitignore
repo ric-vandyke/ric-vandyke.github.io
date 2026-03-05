@@ -1,1 +1,11 @@
 .DS_Store
+node_modules/
+supabase/.temp/
+
+# Local secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
