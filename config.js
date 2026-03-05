@@ -1,4 +1,10 @@
 window.siteConfig = {
+  supabase: {
+    url: 'https://wdllredqnkjplfbtlrip.supabase.co',
+    anonKey: 'sb_publishable_-EzQHoRrrLPRK5gvgrC3Nw_pfmjRpUP',
+    snakeLeaderboardTable: 'snake',
+    snakeSubmitFunction: 'snake-submit-score',
+  },
   links: {
     home: 'index.html',
     games: {

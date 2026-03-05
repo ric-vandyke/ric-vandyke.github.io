@@ -1,0 +1,6 @@
+column_name,data_type,required,default,constraints,notes
+id,uuid,yes,gen_random_uuid(),"primary key","Unique row id"
+name,text,yes,,"2-20 chars; regex: ^[A-Za-z0-9 _.-]{2,20}$","Player display name"
+score,integer,yes,,"check: score >= 0 and score <= 100000","Game score"
+elapsed_ms,integer,no,,"check: elapsed_ms is null or elapsed_ms >= 0","Round duration in milliseconds"
+created_at,timestamptz,yes,now(),"not null","Insert timestamp"
